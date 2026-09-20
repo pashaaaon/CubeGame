@@ -1,0 +1,4 @@
+D:/Projects/C-C++ Projects/Visual Studio Code/CubeGame/build/CMakeFiles/main.dir
+D:/Projects/C-C++ Projects/Visual Studio Code/CubeGame/build/CMakeFiles/CopyResources.dir
+D:/Projects/C-C++ Projects/Visual Studio Code/CubeGame/build/CMakeFiles/edit_cache.dir
+D:/Projects/C-C++ Projects/Visual Studio Code/CubeGame/build/CMakeFiles/rebuild_cache.dir
