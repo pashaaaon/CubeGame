@@ -1,15 +1,28 @@
 #include "Cube.hpp"
 #include "Player.hpp"
+#include "Skybox.hpp"
 
 class GAME {
     private:
-        string version = "v1.0";
+        const char *version = "CubeGame v1.0";
         Player *player = nullptr;
+        float target_fps = 60;
+        Skybox *skybox = nullptr;
 
     public:
+        void ModelLoad() {
+        Player_model = new EAPI_Model_3D("Content/Player/Player.obj");
+        Player_model->texture_filtering(false);
+        Skybox_model = new EAPI_Model_3D("Content/Skybox/Skybox.obj");
+        Skybox_model->texture_filtering(false);
+
+        Cubes::Cobblestone_model = new EAPI_Model_3D("Content/Blocks/Cobblestone/Cobblestone.obj");
+        Cubes::Cobblestone_model->texture_filtering(false);
+    }
+
         void GenerateFlatTerrain() {
-            for (int x = 0; x<20; x++) {
-                for (int y = 0; y<20; y++) {
+            for (int x = 0; x<100; x++) {
+                for (int y = 0; y<100; y++) {
                     Cubes::Cobblestone *terrainblock = new Cubes::Cobblestone(x, y, 0);
                 }
             }
@@ -18,19 +31,10 @@ class GAME {
         void MainLoop() {
             Player player(0.0f, 0.0f, 20.0f);
             while (!EAPI_WindowIsClosed()) {
-                float dx = 0.0f;
-                float dy = 0.0f;
-                float dz = 0.0f;
+                if (EAPI_GetKey(GLFW_KEY_ESCAPE)) {EAPI_DestroyWindow(); break;}
 
-                if (EAPI_GetKey(GLFW_KEY_W)) {dy += 0.5f;}
-                if (EAPI_GetKey(GLFW_KEY_S)) {dy -= 0.5f;}
-                if (EAPI_GetKey(GLFW_KEY_A)) {dx -= 0.5f;}
-                if (EAPI_GetKey(GLFW_KEY_D)) {dx += 0.5f;}
-                if (EAPI_GetKey(GLFW_KEY_SPACE)) {dz += 0.5f;}
-                if (EAPI_GetKey(GLFW_KEY_LEFT_SHIFT)) {dz -= 0.5f;}
-
-                EAPI_CameraMoveToDirection(dx, dy);
                 player.Update();
+                skybox->Update();
 
                 EAPI_Render();
             }
@@ -49,10 +53,14 @@ class GAME {
             
             // Creating game map
             CubeMap_Init();
+            skybox = new Skybox;
             GenerateFlatTerrain();
 
             // Start game
-            cout << "CubeGame " << version << " ; " << EAPI_version << endl;
+            cout << version << " ; " << EAPI_version << endl;
+            EAPI_SetWindowSize(1280, 720);
+            EAPI_SetWindowName(version);
+            EAPI_MouseLock();
             MainLoop();
         }
 };

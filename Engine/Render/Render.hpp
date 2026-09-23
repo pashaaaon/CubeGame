@@ -70,7 +70,7 @@ void EAPI_Render(unsigned short Custom_Buffer_Width = false, unsigned short Cust
     if (SYSTEM_current_Scene3D) {
         static_cast<EAPI_Scene_3D*>(SYSTEM_current_Scene3D)->update_light();
 
-        mat4 Projection_Matrix = perspective(radians(90.0f), static_cast<float>(WinSizeX)/static_cast<float>(WinSizeY), 0.1f, 10000.0f);
+        mat4 Projection_Matrix = perspective(radians(70.0f), static_cast<float>(WinSizeX)/static_cast<float>(WinSizeY), 0.1f, 100.0f);
         mat4 View_Matrix = lookAt(SYSTEM_camera_Position, SYSTEM_camera_Position + SYSTEM_camera_LookAt, vec3(0.0f, 0.0f, 1.0f));
         mat4 ProjView_Matrix = Projection_Matrix * View_Matrix;
 
@@ -100,6 +100,18 @@ void EAPI_Render(unsigned short Custom_Buffer_Width = false, unsigned short Cust
         for (EAPI_Object_3D* &object : static_cast<EAPI_Scene_3D*>(SYSTEM_current_Scene3D)->SYSTEM_objects) {
             if (!object) {continue;}
             EAPI_Model_3D *Model_3D = object->get_model();
+
+            // check render distance (CubeGame)
+            int check_dx = SYSTEM_camera_Position.x - object->position_x;
+            int check_dy = SYSTEM_camera_Position.y - object->position_y;
+            int check_dz = SYSTEM_camera_Position.z - object->position_z;
+            int distance_square = (check_dx*check_dx) + (check_dy*check_dy) + (check_dz*check_dz);
+            if (distance_square > 20*20) {continue;}
+            // check render area
+            vec3 object_pos = {object->position_x, object->position_y, object->position_z};
+            vec3 distance_cam = object_pos - SYSTEM_camera_Position;
+            if (dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.4) {continue;}
+            // ---------------------
 
             if (!Model_3D->SYSTEM_loadthread && Model_3D->SYSTEM_modelRAM) {Model_3D->SYSTEM_loadVRAM();}
             else if (!Model_3D || !Model_3D->SYSTEM_model_available || Model_3D->SYSTEM_loadthread) {continue;}
@@ -218,14 +230,16 @@ void EAPI_Render(unsigned short Custom_Buffer_Width = false, unsigned short Cust
                 glDrawArrays(GL_TRIANGLES, 0, Model_3D->SYSTEM_VBOs_Size[i] / 9);
 
                 // Render Color Picking
-                glBindFramebuffer(GL_FRAMEBUFFER, SYSTEM_Picking_FrameBuffer);
-                glDrawBuffer(GL_COLOR_ATTACHMENT0);
+                if (distance_square > 4*4 && dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.95) {
+                    glBindFramebuffer(GL_FRAMEBUFFER, SYSTEM_Picking_FrameBuffer);
+                    glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-                glUseProgram(default_picking_shaders);
-                glUniform1ui(default_picking_shaders_ObjectIndex, object->SYSTEM_index_in_scene);
-                glDrawArrays(GL_TRIANGLES, 0, Model_3D->SYSTEM_VBOs_Size[i] / 9);
+                    glUseProgram(default_picking_shaders);
+                    glUniform1ui(default_picking_shaders_ObjectIndex, object->SYSTEM_index_in_scene);
+                    glDrawArrays(GL_TRIANGLES, 0, Model_3D->SYSTEM_VBOs_Size[i] / 9);
 
-                glBindFramebuffer(GL_FRAMEBUFFER, SYSTEM_PostEffect_FrameBuffer);
+                    glBindFramebuffer(GL_FRAMEBUFFER, SYSTEM_PostEffect_FrameBuffer);
+                }
             }
         }
     }
