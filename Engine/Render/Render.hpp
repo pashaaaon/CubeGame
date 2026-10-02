@@ -102,15 +102,18 @@ void EAPI_Render(unsigned short Custom_Buffer_Width = false, unsigned short Cust
             EAPI_Model_3D *Model_3D = object->get_model();
 
             // check render distance (CubeGame)
-            int check_dx = SYSTEM_camera_Position.x - object->position_x;
-            int check_dy = SYSTEM_camera_Position.y - object->position_y;
-            int check_dz = SYSTEM_camera_Position.z - object->position_z;
-            int distance_square = (check_dx*check_dx) + (check_dy*check_dy) + (check_dz*check_dz);
-            if (distance_square > 20*20) {continue;}
-            // check render area
-            vec3 object_pos = {object->position_x, object->position_y, object->position_z};
-            vec3 distance_cam = object_pos - SYSTEM_camera_Position;
-            if (dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.4) {continue;}
+            if (!object->CubeGame_IgnoreRenderDistance) {
+                int check_dx = SYSTEM_camera_Position.x - object->position_x;
+                int check_dy = SYSTEM_camera_Position.y - object->position_y;
+                int check_dz = SYSTEM_camera_Position.z - object->position_z;
+                int distance_square = (check_dx*check_dx) + (check_dy*check_dy) + (check_dz*check_dz);
+                if (distance_square > 20*20) {continue;}
+                // check render area
+                vec3 object_pos = {object->position_x, object->position_y, object->position_z};
+                vec3 distance_cam = object_pos - SYSTEM_camera_Position;
+                if (dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.0f) {continue;}
+            }
+
             // ---------------------
 
             if (!Model_3D->SYSTEM_loadthread && Model_3D->SYSTEM_modelRAM) {Model_3D->SYSTEM_loadVRAM();}
@@ -230,7 +233,20 @@ void EAPI_Render(unsigned short Custom_Buffer_Width = false, unsigned short Cust
                 glDrawArrays(GL_TRIANGLES, 0, Model_3D->SYSTEM_VBOs_Size[i] / 9);
 
                 // Render Color Picking
-                if (distance_square > 4*4 && dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.95) {
+                if (object->CubeGame_Interaction) {
+                    // check render distance (CubeGame)
+                    int check_dx = SYSTEM_camera_Position.x - object->position_x;
+                    int check_dy = SYSTEM_camera_Position.y - object->position_y;
+                    int check_dz = SYSTEM_camera_Position.z - object->position_z;
+                    int distance_square = (check_dx*check_dx) + (check_dy*check_dy) + (check_dz*check_dz);
+                    if (distance_square > 4*4) {continue;}
+
+                    // check render area
+                    vec3 object_pos = {object->position_x, object->position_y, object->position_z};
+                    vec3 distance_cam = object_pos - SYSTEM_camera_Position;
+                    if (dot(normalize(distance_cam),  normalize(SYSTEM_camera_LookAt)) < 0.95) {continue;}
+
+                    // render
                     glBindFramebuffer(GL_FRAMEBUFFER, SYSTEM_Picking_FrameBuffer);
                     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 

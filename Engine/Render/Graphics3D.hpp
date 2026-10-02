@@ -323,7 +323,10 @@ class EAPI_Object_3D {
         EAPI_Scene_3D *SYSTEM_scene = nullptr;
         unsigned int SYSTEM_index_in_scene = 0;
         unsigned int SYSTEM_index_in_model = 0;
-        bool CubeGame_Player = false;
+        bool CubeGame_IgnoreRenderDistance = false;
+        bool CubeGame_Interaction = false;
+        bool CubeGame_Cube = false;
+        bool CubeGame_Entity = false;
 
         EAPI_Object_3D(EAPI_Model_3D *model) {
             SYSTEM_current_model = model;

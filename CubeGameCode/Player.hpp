@@ -5,6 +5,109 @@ class Player : public EAPI_Object_3D {
     float last_mouse_x, last_mouse_y;
 
     public:
+        int cubeFaceCheck(Cube *selectedCube) {
+            float x_min = selectedCube->position_x - 0.5f;
+            float x_max = selectedCube->position_x + 0.5f;
+            float y_min = selectedCube->position_y - 0.5f;
+            float y_max = selectedCube->position_y + 0.5f;
+            float z_min = selectedCube->position_z - 0.5f;
+            float z_max = selectedCube->position_z + 0.5f;
+
+            glm::vec3 camDir = SYSTEM_camera_LookAt;
+            glm::vec3 camPos = SYSTEM_camera_Position;
+
+            float tx1 = (x_min - camPos.x) / camDir.x;
+            float tx2 = (x_max - camPos.x) / camDir.x;
+            float ty1 = (y_min - camPos.y) / camDir.y;
+            float ty2 = (y_max - camPos.y) / camDir.y;
+            float tz1 = (z_min - camPos.z) / camDir.z;
+            float tz2 = (z_max - camPos.z) / camDir.z;
+
+            float tx_min = min(tx1, tx2);
+            float tx_max = max(tx1, tx2);
+            float ty_min = min(ty1, ty2);
+            float ty_max = max(ty1, ty2);
+            float tz_min = min(tz1, tz2);
+            float tz_max = max(tz1, tz2);
+
+            float exitT = min(tx_max, min(ty_max, tz_max));
+            float entryT = max(tx_min, max(ty_min, tz_min));
+
+            if (entryT > exitT) {return 7;}
+
+            if (entryT == tx_min) {
+                if (camDir.x > 0) {return 1;}
+                else {return 2;}
+            }
+
+            if (entryT == ty_min) {
+                if (camDir.y > 0) {return 3;}
+                else {return 4;}
+            }
+
+            if (entryT == tz_min) {
+                if (camDir.z > 0) {return 5;}
+                else {return 6;}
+            }
+
+            return 7;
+        }
+
+        void interactionUpdate(bool *left_button, bool *right_button) {
+            EAPI_Object_3D *selectedObject = EAPI_SelectedMouseObject_3D();
+            if (selectedObject == nullptr) {return;}
+            
+            if (selectedObject->CubeGame_Cube) {
+                Cube *selectedCube = static_cast<Cube*>(selectedObject);
+
+                if (*left_button) {
+                    *left_button = false;
+                    delete selectedCube;
+                }
+                
+                else if (*right_button) {
+                    *right_button = false;
+                    int cubeFaceLook = cubeFaceCheck(selectedCube);
+                    glm::ivec3 newCubeCoords = {selectedCube->position_x, selectedCube->position_y, selectedCube->position_z};
+
+                    switch (cubeFaceLook) {
+                        case 1:
+                            newCubeCoords.x -= 1;
+                            break;
+                        case 2:
+                            newCubeCoords.x += 1;
+                            break;
+                        case 3:
+                            newCubeCoords.y -= 1;
+                            break;
+                        case 4:
+                            newCubeCoords.y += 1;
+                            break;
+                        case 5:
+                            newCubeCoords.z -= 1;
+                            break;
+                        case 6:
+                            newCubeCoords.z += 1;
+                            break;
+                        case 7:
+                            return;
+                    }
+
+                        if (newCubeCoords.x >= 0 && newCubeCoords.x < 100 && \
+                            newCubeCoords.y >= 0 && newCubeCoords.y < 100 && \
+                            newCubeCoords.z >= 0 && newCubeCoords.z < 100 && \
+                            CubeMap[newCubeCoords.x][newCubeCoords.y][newCubeCoords.z] == nullptr) {
+                                CubeMap[newCubeCoords.x][newCubeCoords.y][newCubeCoords.z] = new Cubes::Cobblestone(newCubeCoords.x, newCubeCoords.y, newCubeCoords.z);
+                        }
+                    }
+                }
+
+            else if (selectedObject->CubeGame_Entity) {
+
+            } 
+            
+        }
+
         void moveUpdate() {
             // cubes for collision
             vector<Cube*> test_cubes;
@@ -32,12 +135,12 @@ class Player : public EAPI_Object_3D {
             float cam_x, cam_y, cam_z;
             EAPI_GetCameraPosition(&cam_x, &cam_y, &cam_z);
 
-            if (EAPI_GetKey(GLFW_KEY_W)) {dy += 0.1f;}
-            if (EAPI_GetKey(GLFW_KEY_S)) {dy -= 0.1f;}
-            if (EAPI_GetKey(GLFW_KEY_A)) {dx -= 0.1f;}
-            if (EAPI_GetKey(GLFW_KEY_D)) {dx += 0.1f;}
-            if (EAPI_GetKey(GLFW_KEY_SPACE)) {dz += 0.1f;}
-            if (EAPI_GetKey(GLFW_KEY_LEFT_SHIFT)) {dz -= 0.1f;}
+            if (EAPI_GetKey(GLFW_KEY_W)) {dy += 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_S)) {dy -= 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_A)) {dx -= 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_D)) {dx += 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_SPACE)) {dz += 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_LEFT_SHIFT)) {dz -= 0.1f * deltaTime;}
 
             EAPI_CameraMoveToDirection(dx, dy);
 
@@ -57,8 +160,6 @@ class Player : public EAPI_Object_3D {
                 if (x_positive || x_negative) {x_check = true;}
                 if (y_positive || y_negative) {y_check = true;}
                 if (z_positive || z_negative) {z_check = true;}
-                // cout << cube->coordinates.x << ' ' << cube->coordinates.y << ' ' <<cube->coordinates.z << endl;
-                cout << position_x << ' ' << position_y << ' ' << position_z << endl;
             }
 
             if (x_check) {new_cam_x = cam_x;}
@@ -82,9 +183,10 @@ class Player : public EAPI_Object_3D {
             last_mouse_y = mouse_y;
         }
     
-        void Update() {
+        void Update(bool *left_button, bool *right_button) {
             rotateUpdate();
             moveUpdate();
+            interactionUpdate(left_button, right_button);
         }
 
         Player(float spawn_x, float spawn_y, float spawn_z) : EAPI_Object_3D(Player_model) {
@@ -101,8 +203,8 @@ class Player : public EAPI_Object_3D {
             position_y = spawn_y;
             position_z = spawn_z;
 
-            scale_x = 0.5f;
-            scale_y = 0.5f;
-            scale_z = 0.5f;
+            scale_x = 0.3f;
+            scale_y = 0.3f;
+            scale_z = 0.9f;
         }
 };

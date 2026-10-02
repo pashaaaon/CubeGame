@@ -180,8 +180,10 @@ void EAPI_SetCameraAngle(float yaw, float pitch) {
 
 void EAPI_CameraMoveToDirection(float x, float y) {
     using namespace glm;
-    SYSTEM_camera_Position += x * normalize(cross(SYSTEM_camera_LookAt, vec3(0.0f, 0.0f, 1.0f)));
-    SYSTEM_camera_Position += y * SYSTEM_camera_LookAt;
+    vec3 CubeGameVector_ignoreZ = {SYSTEM_camera_LookAt.x, SYSTEM_camera_LookAt.y, 0};
+    CubeGameVector_ignoreZ = normalize(CubeGameVector_ignoreZ);
+    SYSTEM_camera_Position += x * cross(CubeGameVector_ignoreZ, vec3(0.0f, 0.0f, 1.0f));
+    SYSTEM_camera_Position += y * CubeGameVector_ignoreZ;
 }
 
 bool EAPI_GetKey(int ASCII_Key_Number) {

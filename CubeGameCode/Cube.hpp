@@ -10,6 +10,8 @@ class Cube : public EAPI_Object_3D {
             if (x >= 0 && x < 100 && y >= 0 && y < 100 && z >= 0 && z < 100 || CubeMap[x][y][z] != nullptr) {
                 GlobalScene->add_object(this);
                 CubeMap[x][y][z] = this;
+                CubeGame_Interaction = true;
+                CubeGame_Cube = true;
             }
             else {throw std::invalid_argument("Invalid coords");}
 
