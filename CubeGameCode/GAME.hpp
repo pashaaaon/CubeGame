@@ -33,7 +33,7 @@ class GAME {
             Skybox_model = new EAPI_Model_3D("Content/Skybox/Skybox.obj");
             Skybox_model->texture_filtering(false);
 
-            Cubes::Cobblestone_model = new EAPI_Model_3D("Content/Blocks/Cobblestone/Cobblestone.obj");
+            Cubes::Cobblestone_model = new EAPI_Model_3D("Content/Cubes/Cobblestone/Cobblestone.obj");
             Cubes::Cobblestone_model->texture_filtering(false);
         }
 

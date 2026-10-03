@@ -127,7 +127,31 @@ class Player : public EAPI_Object_3D {
                 }
             }
 
-            // check
+            // check before move
+            bool global_x_positive = false;
+            bool global_x_negative = false;
+            bool global_y_positive = false;
+            bool global_y_negative = false;
+            bool global_z_positive = false;
+            bool global_z_negative = false;
+            for (Cube *cube : test_cubes) {
+                bool x_positive, x_negative, y_positive, y_negative, z_positive, z_negative;
+                EAPI_Collision3D(this, cube, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
+                if (x_positive) global_x_positive = x_positive;
+                if (x_negative) global_x_negative = x_negative;
+                if (y_positive) global_y_positive = y_positive;
+                if (y_negative) global_y_negative = y_negative;
+                if (z_positive) global_z_positive = z_positive;
+                if (z_negative) global_z_negative = z_negative;
+            }
+            if (global_x_positive) {SYSTEM_camera_Position.x -= 0.1f; position_x -= 0.1f;}
+            if (global_x_negative) {SYSTEM_camera_Position.x += 0.1f; position_x += 0.1f;}
+            if (global_y_positive) {SYSTEM_camera_Position.y -= 0.1f; position_y -= 0.1f;}
+            if (global_y_negative) {SYSTEM_camera_Position.y += 0.1f; position_y += 0.1f;}
+            if (global_z_positive) {SYSTEM_camera_Position.z -= 0.1f; position_z -= 0.1f;}
+            if (global_z_negative) {SYSTEM_camera_Position.z += 0.1f; position_z += 0.1f;}
+
+            // check after move
             float dx = 0.0f;
             float dy = 0.0f;
             float dz = 0.0f;
@@ -156,7 +180,7 @@ class Player : public EAPI_Object_3D {
             bool z_check = false;
             for (Cube *cube : test_cubes) {
                 bool x_positive, x_negative, y_positive, y_negative, z_positive, z_negative;
-                EAPI_Collision3D(cube, this, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
+                EAPI_Collision3D(this, cube, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
                 if (x_positive || x_negative) {x_check = true;}
                 if (y_positive || y_negative) {y_check = true;}
                 if (z_positive || z_negative) {z_check = true;}
@@ -205,6 +229,6 @@ class Player : public EAPI_Object_3D {
 
             scale_x = 0.3f;
             scale_y = 0.3f;
-            scale_z = 0.9f;
+            scale_z = 1.2f;
         }
 };
