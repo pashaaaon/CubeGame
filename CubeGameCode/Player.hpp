@@ -5,11 +5,10 @@ class Player : public EAPI_Object_3D {
     float last_mouse_x, last_mouse_y;
     float velocity = 0.0f;
     float gravity = 9.81f;
-    float max_fallSpeed = 30.0f;
+    float max_fallSpeed = 15.0f;
     float jump_timer = 0.0f;
     float jump_timer_max = 1.0f;
 
-    public:
         int cubeFaceCheck(Cube *selectedCube) {
             float x_min = selectedCube->position_x - 0.5f;
             float x_max = selectedCube->position_x + 0.5f;
@@ -173,9 +172,9 @@ class Player : public EAPI_Object_3D {
             }
             if (jump_timer > 0.0f && jump_timer < jump_timer_max) {
                 jump_timer += 0.05f * deltaTime;
-                if (jump_timer > jump_timer_max) {jump_timer = 0.0f;}
                 dz += 0.1f * deltaTime;
             }
+            if (jump_timer > jump_timer_max) {jump_timer = 0.0f;}
             dz -= velocity * deltaTime / 50.0f;
 
             EAPI_CameraMoveToDirection(dx, dy);
@@ -225,8 +224,21 @@ class Player : public EAPI_Object_3D {
             last_mouse_x = mouse_x;
             last_mouse_y = mouse_y;
         }
+
+    public:
+        void SetPosition(float x, float y, float z) {
+            position_x = x;
+            position_y = y;
+            position_z = z;
+            EAPI_SetCameraPosition(x, y, z);
+
+            velocity = 0.0f;
+            jump_timer - 0.0f;
+        }
     
         void Update(bool *left_button, bool *right_button) {
+            if (EAPI_GetKey(GLFW_KEY_R)) {SetPosition(50.0f, 50.0f, 10.0f);}
+
             rotateUpdate();
             moveUpdate();
             interactionUpdate(left_button, right_button);

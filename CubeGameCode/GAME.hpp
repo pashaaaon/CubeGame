@@ -46,7 +46,7 @@ class GAME {
         }
 
         void MainLoop() {
-            Player player(50.0f, 50.0f, 5.0f);
+            Player player(50.0f, 50.0f, 10.0f);
             int window_x, window_y;
             auto last_frame = chrono::high_resolution_clock::now();
 
@@ -70,6 +70,7 @@ class GAME {
             GlobalScene = new EAPI_Scene_3D;
             EAPI_SetWindowSize(1280, 720);
             EAPI_SetWindowName(version);
+            EAPI_SetWindowIcon("Content/UI/icon.jpg");
             EAPI_MouseLock();
             EAPI_SelectScene3D((EAPI_Scene_3D*)GlobalScene);
             glfwSetMouseButtonCallback(EAPI_MainWindow, mouseButton);
