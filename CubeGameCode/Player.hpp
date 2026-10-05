@@ -3,6 +3,11 @@ EAPI_Model_3D *Player_model = nullptr;
 class Player : public EAPI_Object_3D {
     float yaw, pitch;
     float last_mouse_x, last_mouse_y;
+    float velocity = 0.0f;
+    float gravity = 9.81f;
+    float max_fallSpeed = 30.0f;
+    float jump_timer = 0.0f;
+    float jump_timer_max = 1.0f;
 
     public:
         int cubeFaceCheck(Cube *selectedCube) {
@@ -148,7 +153,7 @@ class Player : public EAPI_Object_3D {
             if (global_x_negative) {SYSTEM_camera_Position.x += 0.1f; position_x += 0.1f;}
             if (global_y_positive) {SYSTEM_camera_Position.y -= 0.1f; position_y -= 0.1f;}
             if (global_y_negative) {SYSTEM_camera_Position.y += 0.1f; position_y += 0.1f;}
-            if (global_z_positive) {SYSTEM_camera_Position.z -= 0.1f; position_z -= 0.1f;}
+            if (global_z_positive) {SYSTEM_camera_Position.z -= 0.1f; position_z -= 0.1f; jump_timer = 0.0f;}
             if (global_z_negative) {SYSTEM_camera_Position.z += 0.1f; position_z += 0.1f;}
 
             // check after move
@@ -156,43 +161,57 @@ class Player : public EAPI_Object_3D {
             float dy = 0.0f;
             float dz = 0.0f;
 
-            float cam_x, cam_y, cam_z;
-            EAPI_GetCameraPosition(&cam_x, &cam_y, &cam_z);
+            glm::vec3 OLDcam = SYSTEM_camera_Position;
 
             if (EAPI_GetKey(GLFW_KEY_W)) {dy += 0.1f * deltaTime;}
             if (EAPI_GetKey(GLFW_KEY_S)) {dy -= 0.1f * deltaTime;}
             if (EAPI_GetKey(GLFW_KEY_A)) {dx -= 0.1f * deltaTime;}
             if (EAPI_GetKey(GLFW_KEY_D)) {dx += 0.1f * deltaTime;}
-            if (EAPI_GetKey(GLFW_KEY_SPACE)) {dz += 0.1f * deltaTime;}
-            if (EAPI_GetKey(GLFW_KEY_LEFT_SHIFT)) {dz -= 0.1f * deltaTime;}
+            if (EAPI_GetKey(GLFW_KEY_SPACE) && velocity == 0.0f) {
+                dz += 0.1f * deltaTime;
+                jump_timer += 0.05f * deltaTime;
+            }
+            if (jump_timer > 0.0f && jump_timer < jump_timer_max) {
+                jump_timer += 0.05f * deltaTime;
+                if (jump_timer > jump_timer_max) {jump_timer = 0.0f;}
+                dz += 0.1f * deltaTime;
+            }
+            dz -= velocity * deltaTime / 50.0f;
 
             EAPI_CameraMoveToDirection(dx, dy);
 
-            float new_cam_x, new_cam_y, new_cam_z;
-            EAPI_GetCameraPosition(&new_cam_x, &new_cam_y, &new_cam_z);
-            new_cam_z = cam_z + dz;
-            position_x = new_cam_x;
-            position_y = new_cam_y;
-            position_z = new_cam_z;
+            glm::vec3 NEWcam = SYSTEM_camera_Position;
+            NEWcam.z = OLDcam.z + dz;
+            position_x = NEWcam.x;
+            position_y = NEWcam.y;
+            position_z = NEWcam.z;
             
             bool x_check = false;
             bool y_check = false;
             bool z_check = false;
+            bool fall = false;
             for (Cube *cube : test_cubes) {
                 bool x_positive, x_negative, y_positive, y_negative, z_positive, z_negative;
                 EAPI_Collision3D(this, cube, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
                 if (x_positive || x_negative) {x_check = true;}
                 if (y_positive || y_negative) {y_check = true;}
                 if (z_positive || z_negative) {z_check = true;}
+                if (z_negative) {fall = true;}
             }
 
-            if (x_check) {new_cam_x = cam_x;}
-            if (y_check) {new_cam_y = cam_y;}
-            if (z_check) {new_cam_z = cam_z;}
-            EAPI_SetCameraPosition(new_cam_x, new_cam_y, new_cam_z);
-            position_x = new_cam_x;
-            position_y = new_cam_y;
-            position_z = new_cam_z;
+            if (!fall) {
+                    velocity += gravity * deltaTime / 50;
+                    if (velocity > max_fallSpeed) {velocity = max_fallSpeed;}
+            }
+            else {velocity = 0.0f;}
+
+            if (x_check) {NEWcam.x = OLDcam.x;}
+            if (y_check) {NEWcam.y = OLDcam.y;}
+            if (z_check) {NEWcam.z = OLDcam.z;}
+            SYSTEM_camera_Position = NEWcam;
+            position_x = NEWcam.x;
+            position_y = NEWcam.y;
+            position_z = NEWcam.z;
         }
 
         void rotateUpdate() {

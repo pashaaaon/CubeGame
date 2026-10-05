@@ -68,6 +68,9 @@ class GAME {
             bool engine_check = EAPI_Init(true, true);
             if (!engine_check) {throw invalid_argument("Init status: Engine Error");}
             GlobalScene = new EAPI_Scene_3D;
+            EAPI_SetWindowSize(1280, 720);
+            EAPI_SetWindowName(version);
+            EAPI_MouseLock();
             EAPI_SelectScene3D((EAPI_Scene_3D*)GlobalScene);
             glfwSetMouseButtonCallback(EAPI_MainWindow, mouseButton);
             
@@ -82,9 +85,6 @@ class GAME {
 
             // Start game
             cout << version << " ; " << EAPI_version << endl;
-            EAPI_SetWindowSize(1280, 720);
-            EAPI_SetWindowName(version);
-            EAPI_MouseLock();
             MainLoop();
         }
 };
