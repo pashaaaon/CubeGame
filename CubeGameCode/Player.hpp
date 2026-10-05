@@ -72,7 +72,7 @@ class Player : public EAPI_Object_3D {
                 else if (*right_button) {
                     *right_button = false;
                     int cubeFaceLook = cubeFaceCheck(selectedCube);
-                    glm::ivec3 newCubeCoords = {selectedCube->position_x, selectedCube->position_y, selectedCube->position_z};
+                    glm::vec3 newCubeCoords = {selectedCube->position_x, selectedCube->position_y, selectedCube->position_z};
 
                     switch (cubeFaceLook) {
                         case 1:
@@ -96,25 +96,25 @@ class Player : public EAPI_Object_3D {
                         case 7:
                             return;
                     }
-
-                        if (newCubeCoords.x >= 0 && newCubeCoords.x < 100 && \
+                    
+                        glm::vec3 playerCoords = {position_x, position_y, position_z};
+                        if (glm::distance(newCubeCoords, playerCoords) > 1.0f && \
+                            newCubeCoords.x >= 0 && newCubeCoords.x < 100 && \
                             newCubeCoords.y >= 0 && newCubeCoords.y < 100 && \
                             newCubeCoords.z >= 0 && newCubeCoords.z < 100 && \
-                            CubeMap[newCubeCoords.x][newCubeCoords.y][newCubeCoords.z] == nullptr) {
-                                CubeMap[newCubeCoords.x][newCubeCoords.y][newCubeCoords.z] = new Cubes::Cobblestone(newCubeCoords.x, newCubeCoords.y, newCubeCoords.z);
+                            CubeMap[(int)newCubeCoords.x][(int)newCubeCoords.y][(int)newCubeCoords.z] == nullptr) {
+                                CubeMap[(int)newCubeCoords.x][(int)newCubeCoords.y][(int)newCubeCoords.z] = new Cubes::Cobblestone(newCubeCoords.x, newCubeCoords.y, newCubeCoords.z);
                         }
                     }
                 }
 
             else if (selectedObject->CubeGame_Entity) {
-
+                return;
             } 
-            
         }
 
-        void moveUpdate() {
-            // cubes for collision
-            vector<Cube*> test_cubes;
+        vector<Cube*> collision_cubes;
+        void cubesCollisionArray() {
             for (int x=-1; x<2; x++) {
                 for (int y=-1; y<2; y++) {
                     for (int z=-1; z<2; z++) {
@@ -122,7 +122,7 @@ class Player : public EAPI_Object_3D {
                             if (y+(int)position_y >= 0 && y+(int)position_y < 100) {
                                 if (z+(int)position_z >= 0 && z+(int)position_z < 100) {
                                     if (CubeMap[x+(int)position_x][y+(int)position_y][z+(int)position_z] != nullptr) {
-                                        test_cubes.push_back(CubeMap[x+(int)position_x][y+(int)position_y][z+(int)position_z]);
+                                        collision_cubes.push_back(CubeMap[x+(int)position_x][y+(int)position_y][z+(int)position_z]);
                                     } 
                                 }
                             }
@@ -130,15 +130,16 @@ class Player : public EAPI_Object_3D {
                     }
                 }
             }
-
-            // check before move
+        }
+        
+        void pushFromCollisionArea() {
             bool global_x_positive = false;
             bool global_x_negative = false;
             bool global_y_positive = false;
             bool global_y_negative = false;
             bool global_z_positive = false;
             bool global_z_negative = false;
-            for (Cube *cube : test_cubes) {
+            for (Cube *cube : collision_cubes) {
                 bool x_positive, x_negative, y_positive, y_negative, z_positive, z_negative;
                 EAPI_Collision3D(this, cube, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
                 if (x_positive) global_x_positive = x_positive;
@@ -154,8 +155,16 @@ class Player : public EAPI_Object_3D {
             if (global_y_negative) {SYSTEM_camera_Position.y += 0.1f; position_y += 0.1f;}
             if (global_z_positive) {SYSTEM_camera_Position.z -= 0.1f; position_z -= 0.1f; jump_timer = 0.0f;}
             if (global_z_negative) {SYSTEM_camera_Position.z += 0.1f; position_z += 0.1f;}
+        }
 
-            // check after move
+        void moveUpdate() {
+            // cubes for collision
+            cubesCollisionArray();
+
+            // push player from collision area
+            pushFromCollisionArea();
+
+            // move logic
             float dx = 0.0f;
             float dy = 0.0f;
             float dz = 0.0f;
@@ -189,12 +198,13 @@ class Player : public EAPI_Object_3D {
             bool y_check = false;
             bool z_check = false;
             bool fall = false;
-            for (Cube *cube : test_cubes) {
+            for (Cube *cube : collision_cubes) {
                 bool x_positive, x_negative, y_positive, y_negative, z_positive, z_negative;
                 EAPI_Collision3D(this, cube, &x_positive, &x_negative, &y_positive, &y_negative, &z_positive, &z_negative);
                 if (x_positive || x_negative) {x_check = true;}
                 if (y_positive || y_negative) {y_check = true;}
                 if (z_positive || z_negative) {z_check = true;}
+                if (z_positive) {jump_timer = 0.0f;}
                 if (z_negative) {fall = true;}
             }
 

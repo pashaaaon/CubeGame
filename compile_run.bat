@@ -12,5 +12,5 @@ cd build
 cmake .. -G "MinGW Makefiles"
 cmake --build .
 cd ..
-cd Debug-Release
-./main.exe
+cd CubeGame-bin
+./CubeGame.exe
