@@ -115,6 +115,7 @@ class Player : public EAPI_Object_3D {
 
         vector<Cube*> collision_cubes;
         void cubesCollisionArray() {
+            collision_cubes = {};
             for (int x=-1; x<2; x++) {
                 for (int y=-1; y<2; y++) {
                     for (int z=-1; z<2; z++) {
