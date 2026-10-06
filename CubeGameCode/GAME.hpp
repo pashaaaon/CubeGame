@@ -1,13 +1,14 @@
 #include "Cube.hpp"
 #include "Player.hpp"
 #include "Skybox.hpp"
+#include "MapLoader.hpp"
 
 bool left_button = false;
 bool right_button = false;
 
 class GAME {
     private:
-        const char *version = "CubeGame v1.0";
+        const char *version = "CubeGame v1.1";
         Player *player = nullptr;
         Skybox *skybox = nullptr;
 
@@ -33,14 +34,13 @@ class GAME {
             Skybox_model = new EAPI_Model_3D("Content/Skybox/Skybox.obj");
             Skybox_model->texture_filtering(false);
 
-            Cubes::Cobblestone_model = new EAPI_Model_3D("Content/Cubes/Cobblestone/Cobblestone.obj");
-            Cubes::Cobblestone_model->texture_filtering(false);
+            Cubes::CubeModelLoad();
         }
 
         void GenerateFlatTerrain() {
             for (int x = 0; x<100; x++) {
                 for (int y = 0; y<100; y++) {
-                    Cubes::Cobblestone *terrainblock = new Cubes::Cobblestone(x, y, 0);
+                    Cubes::CubeCreator(1, x, y, 0);
                 }
             }
         }
@@ -52,6 +52,8 @@ class GAME {
 
             while (!EAPI_WindowIsClosed()) {
                 if (EAPI_GetKey(GLFW_KEY_ESCAPE)) {EAPI_DestroyWindow(); break;}
+                if (EAPI_GetKey(GLFW_KEY_J)) MapLoader save(MAP_SAVE);
+                if (EAPI_GetKey(GLFW_KEY_L)) MapLoader load(MAP_LOAD);
                 EAPI_UpdateEvents();
 
                 calc_deltaTime(&last_frame);
@@ -70,7 +72,7 @@ class GAME {
             GlobalScene = new EAPI_Scene_3D;
             EAPI_SetWindowSize(1280, 720);
             EAPI_SetWindowName(version);
-            EAPI_SetWindowIcon("Content/UI/icon.jpg");
+            EAPI_SetWindowIcon("Content/UI/icon.png");
             EAPI_MouseLock();
             EAPI_SelectScene3D((EAPI_Scene_3D*)GlobalScene);
             glfwSetMouseButtonCallback(EAPI_MainWindow, mouseButton);

@@ -1,6 +1,7 @@
 EAPI_Model_3D *Player_model = nullptr;
 
 class Player : public EAPI_Object_3D {
+    int cubeTypeSelected = 1;
     float yaw, pitch;
     float last_mouse_x, last_mouse_y;
     float velocity = 0.0f;
@@ -103,7 +104,7 @@ class Player : public EAPI_Object_3D {
                             newCubeCoords.y >= 0 && newCubeCoords.y < 100 && \
                             newCubeCoords.z >= 0 && newCubeCoords.z < 100 && \
                             CubeMap[(int)newCubeCoords.x][(int)newCubeCoords.y][(int)newCubeCoords.z] == nullptr) {
-                                CubeMap[(int)newCubeCoords.x][(int)newCubeCoords.y][(int)newCubeCoords.z] = new Cubes::Cobblestone(newCubeCoords.x, newCubeCoords.y, newCubeCoords.z);
+                                Cubes::CubeCreator(cubeTypeSelected, newCubeCoords.x, newCubeCoords.y, newCubeCoords.z);
                         }
                     }
                 }

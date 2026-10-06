@@ -4,7 +4,7 @@ Cube* CubeMap[100][100][100];
 class Cube : public EAPI_Object_3D {
     public:
         glm::ivec3 coordinates = {0, 0, 0};
-        bool placed = false;
+        unsigned int index = 0;
 
         Cube(EAPI_Model_3D *model, int x, int y, int z) : EAPI_Object_3D(model) {
             if (x >= 0 && x < 100 && y >= 0 && y < 100 && z >= 0 && z < 100 || CubeMap[x][y][z] != nullptr) {
@@ -44,6 +44,18 @@ class Cube : public EAPI_Object_3D {
 
 namespace Cubes {
     #include "Cubes/Cobblestone.hpp"
+
+    void CubeCreator(int index, int x, int y, int z) {
+        switch (index) {
+            case 1:
+                CubeMap[x][y][z] = new Cobblestone(x, y, z);
+        }
+    }
+
+    void CubeModelLoad() {
+        Cubes::Cobblestone_model = new EAPI_Model_3D("Content/Cubes/Cobblestone/Cobblestone.obj");
+        Cubes::Cobblestone_model->texture_filtering(false);
+    }
 }
 
 void CubeMap_Init() {
