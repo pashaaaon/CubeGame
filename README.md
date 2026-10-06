@@ -17,7 +17,7 @@
 ## Credits
 
 ****Coders:****
-- pashaaaon - https://github.com/pashaaaon/OpenGL-Graphics-Engine
+- pashaaaon - https://github.com/pashaaaon
 
 ****Texture artists****:
 - Blubeerz - https://blubeerz.newgrounds.com/ ; https://ko-fi.com/blubeerz
